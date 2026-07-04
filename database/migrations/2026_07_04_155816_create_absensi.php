@@ -18,12 +18,17 @@ return new class extends Migration
             $table->date('tanggal');
             $table->time('jam_masuk')->nullable();
             $table->time('jam_pulang')->nullable();
-            $table->decimal('latitude_masuk')->nullable();
-            $table->decimal('longitude_masuk')->nullable();
-            $table->decimal('latitude_pulang')->nullable();
-            $table->decimal('longitude_pulang')->nullable();
-             $table->foreign('pegawai_id')->references('id')->on('pegawai');
-             $table->foreign('lokasi_kerja_id')->references('id')->on('lokasi_kerja');
+            $table->decimal('latitude_masuk', 10, 8)->nullable();
+            $table->decimal('longitude_masuk', 11, 8)->nullable();
+            $table->decimal('latitude_pulang', 10, 8)->nullable();
+            $table->decimal('longitude_pulang', 11, 8)->nullable();
+            $table->integer('jarak_masuk_meter')->nullable();
+            $table->integer('jarak_pulang_meter')->nullable();
+            $table->string('foto_masuk')->nullable();
+            $table->string('foto_pulang')->nullable();
+            $table->enum('status', ['hadir', 'terlambat'])->default('hadir');
+            $table->foreign('pegawai_id')->references('id')->on('pegawai')->onDelete('cascade');
+            $table->foreign('lokasi_kerja_id')->references('id')->on('lokasi_kerja')->onDelete('cascade');
             $table->timestamps();
         });
     }

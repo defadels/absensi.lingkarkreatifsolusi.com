@@ -1,0 +1,165 @@
+<x-layouts.app>
+    <x-slot name="title">Absen Pulang</x-slot>
+
+    <div class="max-w-2xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="glass-card rounded-2xl p-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-white">Absensi Pulang</h2>
+                <p class="text-sm text-indigo-300">Masuk: {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }} • Radius: {{ $lokasiAktif->radius_meter }}m</p>
+            </div>
+            <div class="ml-auto text-right">
+                <p class="text-2xl font-bold text-white tabular-nums" id="absenTime">--:--</p>
+                <p class="text-xs text-indigo-400">WIB</p>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMsg" class="hidden"></div>
+        <div id="locationStatus" class="glass-card rounded-xl p-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0" id="locIcon">
+                <svg class="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-amber-300" id="locText">Mendapatkan lokasi GPS...</p>
+                <p class="text-xs text-indigo-400" id="locDetail">Pastikan GPS aktif</p>
+            </div>
+        </div>
+
+        <!-- Camera -->
+        <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="relative bg-gray-950 aspect-video" id="cameraContainer">
+                <video id="videoFeed" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                <canvas id="capturedPhoto" class="w-full h-full object-cover hidden absolute inset-0"></canvas>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="frameGuide">
+                    <div class="w-40 h-48 border-2 border-violet-400/60 rounded-2xl flex items-end justify-center pb-2">
+                        <p class="text-xs text-violet-300/70 text-center leading-tight">Posisikan wajah<br>di dalam kotak</p>
+                    </div>
+                </div>
+                <div id="cameraOff" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 text-center p-6">
+                    <svg class="w-12 h-12 text-violet-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                    <p class="text-sm text-indigo-300 mb-3">Aktifkan kamera untuk absensi pulang</p>
+                    <button id="startCamera" class="bg-violet-600 hover:bg-violet-700 px-5 py-2 rounded-xl text-sm text-white font-medium transition-colors">
+                        Aktifkan Kamera
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 border-t border-indigo-800/30 flex items-center gap-3">
+                <button id="retakeBtn" class="hidden px-4 py-2 rounded-xl text-sm text-indigo-300 border border-indigo-700/50 hover:border-indigo-500 transition-all">
+                    ↺ Ambil Ulang
+                </button>
+                <button id="captureBtn" class="hidden flex-1 bg-violet-600 hover:bg-violet-700 py-2.5 rounded-xl text-sm text-white font-semibold transition-colors">
+                    📸 Ambil Foto
+                </button>
+            </div>
+        </div>
+
+        <button id="submitBtn" disabled
+            class="w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 bg-gray-800 text-gray-500 cursor-not-allowed"
+            onclick="submitAbsensi()">
+            ✓ Kirim Absen Pulang
+        </button>
+    </div>
+
+    @push('scripts')
+    <script>
+        let stream = null, fotoBase64 = null, currentLat = null, currentLng = null, locationReady = false;
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('capturedPhoto');
+        const ctx = canvas.getContext('2d');
+
+        function tick() {
+            document.getElementById('absenTime').textContent =
+                new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+        }
+        tick(); setInterval(tick, 1000);
+
+        navigator.geolocation.watchPosition(pos => {
+            currentLat = pos.coords.latitude;
+            currentLng = pos.coords.longitude;
+            locationReady = true;
+            document.getElementById('locIcon').innerHTML = `<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+            document.getElementById('locIcon').className = 'w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0';
+            document.getElementById('locText').textContent = 'Lokasi GPS berhasil didapat';
+            document.getElementById('locText').className = 'text-sm font-medium text-emerald-300';
+            document.getElementById('locDetail').textContent = `Lat: ${currentLat.toFixed(6)}, Lng: ${currentLng.toFixed(6)}`;
+            checkReady();
+        }, err => {
+            document.getElementById('locText').textContent = 'Gagal: ' + err.message;
+        }, { enableHighAccuracy: true });
+
+        document.getElementById('startCamera').addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                video.srcObject = stream;
+                document.getElementById('cameraOff').classList.add('hidden');
+                document.getElementById('captureBtn').classList.remove('hidden');
+                checkReady();
+            } catch(e) { alert('Kamera tidak dapat diakses: ' + e.message); }
+        });
+
+        document.getElementById('captureBtn').addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            video.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            document.getElementById('frameGuide').classList.add('hidden');
+            document.getElementById('captureBtn').classList.add('hidden');
+            document.getElementById('retakeBtn').classList.remove('hidden');
+            checkReady();
+        });
+
+        document.getElementById('retakeBtn').addEventListener('click', () => {
+            fotoBase64 = null;
+            canvas.classList.add('hidden');
+            video.classList.remove('hidden');
+            document.getElementById('frameGuide').classList.remove('hidden');
+            document.getElementById('captureBtn').classList.remove('hidden');
+            document.getElementById('retakeBtn').classList.add('hidden');
+            checkReady();
+        });
+
+        function checkReady() {
+            const ready = locationReady && fotoBase64 && stream;
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = !ready;
+            btn.className = ready
+                ? 'w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 bg-violet-600 hover:bg-violet-700 text-white cursor-pointer'
+                : 'w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 bg-gray-800 text-gray-500 cursor-not-allowed';
+        }
+
+        async function submitAbsensi() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.textContent = 'Mengirim...';
+            try {
+                const res = await fetch('{{ route("pegawai.absensi.pulang.store") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                    body: JSON.stringify({ latitude: currentLat, longitude: currentLng, foto: fotoBase64 }),
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    document.getElementById('statusMsg').className = 'rounded-xl p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium';
+                    document.getElementById('statusMsg').textContent = '✓ ' + data.message;
+                    document.getElementById('statusMsg').classList.remove('hidden');
+                    if (stream) stream.getTracks().forEach(t => t.stop());
+                    setTimeout(() => window.location.href = '{{ route("pegawai.dashboard") }}', 2000);
+                } else throw new Error(data.error || 'Terjadi kesalahan.');
+            } catch(e) {
+                document.getElementById('statusMsg').className = 'rounded-xl p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium';
+                document.getElementById('statusMsg').textContent = '✗ ' + e.message;
+                document.getElementById('statusMsg').classList.remove('hidden');
+                btn.disabled = false; btn.textContent = '✓ Kirim Absen Pulang';
+                checkReady();
+            }
+        }
+    </script>
+    @endpush
+</x-layouts.app>

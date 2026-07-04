@@ -1,52 +1,78 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+<x-layouts.guest>
+    <x-slot name="title">Daftar</x-slot>
+
+    <h2 class="text-xl font-bold text-white mb-1">Buat Akun Baru</h2>
+    <p class="text-indigo-300 text-sm mb-6">Daftar sebagai pegawai PT Lingkar Kreatif Solusi</p>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
 
         <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <label for="name" class="block text-sm font-medium text-indigo-200 mb-1.5">Nama Lengkap</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                placeholder="John Doe"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm placeholder-indigo-400/50 @error('name') border-red-500/50 @enderror">
+            @error('name')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <!-- No HP -->
+        <div>
+            <label for="no_hp" class="block text-sm font-medium text-indigo-200 mb-1.5">Nomor HP</label>
+            <input id="no_hp" type="tel" name="no_hp" value="{{ old('no_hp') }}" required
+                placeholder="08xxxxxxxxxx"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm placeholder-indigo-400/50 @error('no_hp') border-red-500/50 @enderror">
+            @error('no_hp')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label for="email" class="block text-sm font-medium text-indigo-200 mb-1.5">Email</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                placeholder="nama@perusahaan.com"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm placeholder-indigo-400/50 @error('email') border-red-500/50 @enderror">
+            @error('email')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <label for="password" class="block text-sm font-medium text-indigo-200 mb-1.5">Password</label>
+            <input id="password" type="password" name="password" required autocomplete="new-password"
+                placeholder="Minimal 8 karakter"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm placeholder-indigo-400/50 @error('password') border-red-500/50 @enderror">
+            @error('password')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div>
+            <label for="password_confirmation" class="block text-sm font-medium text-indigo-200 mb-1.5">Konfirmasi Password</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
+                placeholder="Ulangi password"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm placeholder-indigo-400/50 @error('password_confirmation') border-red-500/50 @enderror">
+            @error('password_confirmation')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
+        <div class="bg-indigo-900/30 border border-indigo-700/30 rounded-xl p-3 text-xs text-indigo-300">
+            💡 Setelah mendaftar, admin akan melengkapi data NIP, jabatan, dan divisi Anda.
         </div>
+
+        <button type="submit" class="btn-primary w-full py-2.5 rounded-xl text-white font-semibold text-sm tracking-wide">
+            Buat Akun
+        </button>
+
+        <p class="text-center text-sm text-indigo-400">
+            Sudah punya akun?
+            <a href="{{ route('login') }}" class="text-indigo-300 hover:text-white font-medium transition-colors">Masuk</a>
+        </p>
     </form>
-</x-guest-layout>
+</x-layouts.guest>
