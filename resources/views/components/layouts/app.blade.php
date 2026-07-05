@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name', 'Absensi LKS') }} — PT Lingkar Kreatif Solusi</title>
     <meta name="description" content="Sistem Absensi Digital PT Lingkar Kreatif Solusi">
+    <link rel="icon" type="image/png" href="/Logo-Links.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,15 +71,13 @@
         <!-- Sidebar -->
         <aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-indigo-950 via-violet-950 to-gray-900 border-r border-indigo-800/30 flex flex-col z-40 transition-transform duration-300">
             <!-- Logo -->
-            <div class="flex items-center gap-3 px-6 py-5 border-b border-indigo-800/30">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg glow-indigo">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-sm font-bold text-white leading-tight">Absensi LKS</p>
-                    <p class="text-xs text-indigo-300">PT Lingkar Kreatif</p>
+            <div class="flex items-center gap-3 px-4 py-4 border-b border-indigo-800/30">
+                <img src="/Logo-Links.png" alt="Links Logo"
+                     class="w-10 h-10 rounded-lg object-contain flex-shrink-0"
+                     style="background: white; padding: 2px;">
+                <div class="min-w-0">
+                    <p class="text-sm font-bold text-white leading-tight truncate">Absensi Digital</p>
+                    <p class="text-xs text-indigo-300 truncate">PT Lingkar Kreatif Solusi</p>
                 </div>
             </div>
 
