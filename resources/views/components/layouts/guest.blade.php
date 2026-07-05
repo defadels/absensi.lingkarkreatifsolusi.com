@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Login' }} — PT Lingkar Kreatif Solusi</title>
+    <link rel="icon" type="image/png" href="/Logo-Links.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -59,13 +60,12 @@
     <div class="relative z-10 w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-2xl mb-4" style="box-shadow: 0 0 30px rgba(99,102,241,0.4)">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
+            <div class="flex justify-center mb-4">
+                <div class="rounded-2xl overflow-hidden shadow-2xl" style="box-shadow: 0 0 30px rgba(99,102,241,0.25); background: white; padding: 10px 18px;">
+                    <img src="/links-logo-new.png" alt="PT Lingkar Kreatif Solusi" class="h-14 w-auto object-contain">
+                </div>
             </div>
-            <h1 class="text-2xl font-bold text-white">PT Lingkar Kreatif Solusi</h1>
-            <p class="text-indigo-300 text-sm mt-1">Sistem Absensi Digital</p>
+            <p class="text-indigo-300 text-sm mt-3">Sistem Absensi Digital</p>
         </div>
 
         <!-- Card -->
