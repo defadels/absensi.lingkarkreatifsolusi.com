@@ -7,13 +7,18 @@ use App\Http\Controllers\Pegawai;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Root redirect
+// Root Landing Page
 Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
-});
+    return view('landing');
+})->name('landing');
+
+// Offline Fallback Page
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');
 
 // Central dashboard redirect
 Route::get('/dashboard', [DashboardController::class, 'index'])
