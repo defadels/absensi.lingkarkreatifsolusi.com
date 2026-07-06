@@ -1,9 +1,9 @@
 <x-layouts.app>
     <x-slot name="title">Absen Pulang</x-slot>
 
-    <div class="max-w-2xl mx-auto space-y-6">
+    <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         <!-- Header -->
-        <div class="glass-card rounded-2xl p-5 flex items-center gap-4">
+        <div class="glass-card rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
             <div class="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
                 <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
@@ -11,10 +11,10 @@
             </div>
             <div>
                 <h2 class="text-lg font-bold text-white">Absensi Pulang</h2>
-                <p class="text-sm text-indigo-300">Masuk: {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }} • Radius: {{ $lokasiAktif->radius_meter }}m</p>
+                <p class="text-xs sm:text-sm text-indigo-300">Masuk: {{ \Carbon\Carbon::parse($absensiHariIni->jam_masuk)->format('H:i') }} • Radius: {{ $lokasiAktif->radius_meter }}m</p>
             </div>
             <div class="ml-auto text-right">
-                <p class="text-2xl font-bold text-white tabular-nums" id="absenTime">--:--</p>
+                <p class="text-xl sm:text-2xl font-bold text-white tabular-nums" id="absenTime">--:--</p>
                 <p class="text-xs text-indigo-400">WIB</p>
             </div>
         </div>

@@ -3,12 +3,12 @@
 
     <div class="space-y-5">
         <!-- Filter -->
-        <div class="glass-card rounded-2xl p-5">
+        <div class="glass-card rounded-2xl p-4 sm:p-5">
             <h3 class="text-sm font-semibold text-white mb-4">Pilih Periode Laporan</h3>
-            <form method="GET" action="{{ route('hrd.laporan') }}" class="flex flex-wrap items-end gap-3">
-                <div>
+            <form method="GET" action="{{ route('hrd.laporan') }}" class="flex flex-wrap items-end gap-2 sm:gap-3">
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Bulan</label>
-                    <select name="bulan" class="input-field rounded-xl px-3 py-2 text-white text-sm">
+                    <select name="bulan" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm">
                         @foreach(range(1, 12) as $m)
                             <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::create(null, $m)->translatedFormat('F') }}
@@ -16,9 +16,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Tahun</label>
-                    <select name="tahun" class="input-field rounded-xl px-3 py-2 text-white text-sm">
+                    <select name="tahun" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm">
                         @foreach(range(now()->year, now()->year - 2, -1) as $y)
                             <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -26,8 +26,8 @@
                 </div>
                 <button type="submit" class="btn-primary px-5 py-2 rounded-xl text-sm text-white font-medium">Tampilkan</button>
                 <a href="{{ route('hrd.laporan.export-pdf', ['bulan' => $bulan, 'tahun' => $tahun]) }}"
-                   class="px-5 py-2 rounded-xl text-sm text-red-300 border border-red-700/50 hover:bg-red-700/20 transition-all flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                   class="px-4 sm:px-5 py-2 rounded-xl text-sm text-red-300 border border-red-700/50 hover:bg-red-700/20 transition-all flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                     Cetak PDF
                 </a>
             </form>
@@ -35,7 +35,7 @@
 
         <!-- Report Table -->
         <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="px-5 py-4 border-b border-indigo-800/30">
+            <div class="px-4 sm:px-5 py-4 border-b border-indigo-800/30">
                 <h3 class="text-sm font-semibold text-white">
                     Laporan Kehadiran: {{ \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F Y') }}
                 </h3>
@@ -44,7 +44,9 @@
             @if($pegawaiList->isEmpty())
                 <div class="py-12 text-center"><p class="text-indigo-400 text-sm">Tidak ada data pegawai</p></div>
             @else
-            <div class="overflow-x-auto">
+
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-indigo-800/20">
@@ -99,6 +101,59 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile Card List -->
+            <div class="md:hidden divide-y divide-indigo-800/20">
+                @php
+                    $hariKerja = \Carbon\Carbon::parse($tanggalMulai)->diffInDays(\Carbon\Carbon::parse($tanggalSelesai)) + 1;
+                @endphp
+                @foreach($pegawaiList as $item)
+                @php
+                    $hadir = $item->absensi->where('status', 'hadir')->count();
+                    $terlambat = $item->absensi->where('status', 'terlambat')->count();
+                    $izin = $item->izin->count();
+                    $totalAbsen = $hadir + $terlambat;
+                    $persen = $hariKerja > 0 ? round(($totalAbsen / $hariKerja) * 100) : 0;
+                @endphp
+                <div class="p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-9 h-9 rounded-lg bg-indigo-600/30 flex items-center justify-center text-sm font-bold text-indigo-300 flex-shrink-0">
+                            {{ strtoupper(substr($item->user->name, 0, 2)) }}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-white truncate">{{ $item->user->name }}</p>
+                            <p class="text-xs text-indigo-400">{{ $item->divisi ?? '—' }} • {{ $item->nip ?? '—' }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-sm font-bold text-white">{{ $persen }}%</p>
+                            <p class="text-xs text-indigo-400">Kehadiran</p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-1.5 mb-3">
+                        <div class="h-1.5 rounded-full {{ $persen >= 80 ? 'bg-emerald-500' : ($persen >= 60 ? 'bg-amber-500' : 'bg-red-500') }}"
+                             style="width: {{ min(100, $persen) }}%"></div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-white/5 rounded-lg py-2">
+                            <p class="text-sm font-bold text-emerald-400">{{ $hadir }}</p>
+                            <p class="text-xs text-indigo-400">Hadir</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg py-2">
+                            <p class="text-sm font-bold text-amber-400">{{ $terlambat }}</p>
+                            <p class="text-xs text-indigo-400">Telat</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg py-2">
+                            <p class="text-sm font-bold text-violet-400">{{ $izin }}</p>
+                            <p class="text-xs text-indigo-400">Izin</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg py-2">
+                            <p class="text-sm font-bold text-white">{{ $totalAbsen }}</p>
+                            <p class="text-xs text-indigo-400">Total</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
             @endif
         </div>

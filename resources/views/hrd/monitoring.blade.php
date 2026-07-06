@@ -3,36 +3,36 @@
 
     <div class="space-y-4">
         <!-- Stats -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="glass-card rounded-2xl p-5 stat-card">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="glass-card rounded-2xl p-4 sm:p-5 stat-card">
                 <p class="text-xs text-indigo-400 mb-1">Total Pegawai</p>
-                <p class="text-2xl font-bold text-white">{{ $totalPegawai }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-white">{{ $totalPegawai }}</p>
             </div>
-            <div class="glass-card rounded-2xl p-5 stat-card">
+            <div class="glass-card rounded-2xl p-4 sm:p-5 stat-card">
                 <p class="text-xs text-indigo-400 mb-1">Hadir</p>
-                <p class="text-2xl font-bold text-emerald-400">{{ $totalHadir }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-emerald-400">{{ $totalHadir }}</p>
             </div>
-            <div class="glass-card rounded-2xl p-5 stat-card">
+            <div class="glass-card rounded-2xl p-4 sm:p-5 stat-card">
                 <p class="text-xs text-indigo-400 mb-1">Terlambat</p>
-                <p class="text-2xl font-bold text-amber-400">{{ $totalTerlambat }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-amber-400">{{ $totalTerlambat }}</p>
             </div>
-            <div class="glass-card rounded-2xl p-5 stat-card">
+            <div class="glass-card rounded-2xl p-4 sm:p-5 stat-card">
                 <p class="text-xs text-indigo-400 mb-1">Alpha</p>
-                <p class="text-2xl font-bold text-red-400">{{ max(0, $totalAlpha) }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-red-400">{{ max(0, $totalAlpha) }}</p>
             </div>
         </div>
 
         <!-- Filter -->
         <div class="glass-card rounded-2xl p-4">
-            <form method="GET" action="{{ route('hrd.monitoring') }}" class="flex flex-wrap items-end gap-3">
-                <div>
+            <form method="GET" action="{{ route('hrd.monitoring') }}" class="flex flex-wrap items-end gap-2 sm:gap-3">
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ $tanggal }}"
-                        class="input-field rounded-xl px-3 py-2 text-white text-sm">
+                        class="input-field w-full rounded-xl px-3 py-2 text-white text-sm">
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Pegawai</label>
-                    <select name="pegawai_id" class="input-field rounded-xl px-3 py-2 text-white text-sm min-w-40">
+                    <select name="pegawai_id" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm sm:min-w-40">
                         <option value="">Semua Pegawai</option>
                         @foreach($pegawai as $p)
                             <option value="{{ $p->id }}" {{ $pegawaiId == $p->id ? 'selected' : '' }}>{{ $p->user->name }}</option>
@@ -45,7 +45,7 @@
 
         <!-- Table -->
         <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="px-5 py-4 border-b border-indigo-800/30">
+            <div class="px-4 sm:px-5 py-4 border-b border-indigo-800/30">
                 <h3 class="text-sm font-semibold text-white">
                     Kehadiran: {{ \Carbon\Carbon::parse($tanggal)->isoFormat('dddd, D MMMM Y') }}
                 </h3>
@@ -53,7 +53,8 @@
             @if($absensi->isEmpty())
                 <div class="py-12 text-center"><p class="text-indigo-400 text-sm">Tidak ada data absensi</p></div>
             @else
-            <div class="overflow-x-auto">
+            <!-- Desktop Table -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-indigo-800/20">
@@ -88,6 +89,41 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile Card List -->
+            <div class="sm:hidden divide-y divide-indigo-800/20">
+                @foreach($absensi as $item)
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-600/30 flex items-center justify-center text-xs font-bold text-indigo-300 flex-shrink-0">
+                                {{ strtoupper(substr($item->pegawai->user->name, 0, 2)) }}
+                            </div>
+                            <div>
+                                <p class="font-medium text-white text-sm">{{ $item->pegawai->user->name }}</p>
+                                <p class="text-xs text-indigo-400">{{ $item->pegawai->jabatan ?? '—' }}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 rounded-full badge-{{ $item->status }}">{{ ucfirst($item->status) }}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="text-center bg-white/5 rounded-lg py-2">
+                            <p class="text-xs text-indigo-400">Masuk</p>
+                            <p class="text-sm font-semibold text-white">{{ $item->jam_masuk ? \Carbon\Carbon::parse($item->jam_masuk)->format('H:i') : '—' }}</p>
+                        </div>
+                        <div class="text-center bg-white/5 rounded-lg py-2">
+                            <p class="text-xs text-indigo-400">Pulang</p>
+                            <p class="text-sm font-semibold text-white">{{ $item->jam_pulang ? \Carbon\Carbon::parse($item->jam_pulang)->format('H:i') : '—' }}</p>
+                        </div>
+                        <div class="text-center bg-white/5 rounded-lg py-2">
+                            <p class="text-xs text-indigo-400">Jarak</p>
+                            <p class="text-sm font-semibold text-white">{{ $item->jarak_masuk_meter ? $item->jarak_masuk_meter . 'm' : '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
             @if($absensi->hasPages())
             <div class="px-5 py-3 border-t border-indigo-800/20">{{ $absensi->links() }}</div>
             @endif
