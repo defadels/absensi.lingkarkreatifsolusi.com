@@ -12,7 +12,7 @@
         <div class="grid gap-4">
             @forelse($lokasi as $item)
             <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="flex items-start gap-4 p-5">
+                <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-4 sm:p-5">
                     <div class="w-10 h-10 rounded-xl {{ $item->is_active ? 'bg-emerald-500/20' : 'bg-gray-700/50' }} flex items-center justify-center flex-shrink-0">
                         <svg class="w-5 h-5 {{ $item->is_active ? 'text-emerald-400' : 'text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -32,7 +32,7 @@
                             <span>⏱ Toleransi: {{ $item->toleransi_menit }} menit</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
+                    <div class="flex flex-wrap items-center gap-2 flex-shrink-0 sm:flex-col sm:items-end">
                         <form method="POST" action="{{ route('admin.lokasi-kerja.toggle', $item) }}">
                             @csrf @method('PATCH')
                             <button type="submit" class="text-xs px-3 py-1.5 rounded-lg transition-colors border

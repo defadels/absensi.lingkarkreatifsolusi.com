@@ -4,22 +4,24 @@
     <div class="space-y-4">
         <!-- Search -->
         <div class="glass-card rounded-2xl p-4">
-            <form method="GET" action="{{ route('admin.pegawai.index') }}" class="flex gap-3">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, email, NIP, jabatan..."
-                    class="input-field flex-1 rounded-xl px-4 py-2 text-white text-sm placeholder-indigo-400/50">
-                <button type="submit" class="btn-primary px-5 py-2 rounded-xl text-sm text-white font-medium">Cari</button>
+            <form method="GET" action="{{ route('admin.pegawai.index') }}" class="flex gap-2 sm:gap-3">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIP, jabatan..."
+                    class="input-field flex-1 rounded-xl px-3 sm:px-4 py-2 text-white text-sm placeholder-indigo-400/50 min-w-0">
+                <button type="submit" class="btn-primary px-4 sm:px-5 py-2 rounded-xl text-sm text-white font-medium flex-shrink-0">Cari</button>
                 @if(request('search'))
-                    <a href="{{ route('admin.pegawai.index') }}" class="px-4 py-2 rounded-xl text-sm text-indigo-300 border border-indigo-700/50 hover:border-indigo-500 transition-all">Reset</a>
+                    <a href="{{ route('admin.pegawai.index') }}" class="px-3 sm:px-4 py-2 rounded-xl text-sm text-indigo-300 border border-indigo-700/50 hover:border-indigo-500 transition-all flex-shrink-0">Reset</a>
                 @endif
             </form>
         </div>
 
         <!-- Table -->
         <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="px-5 py-4 border-b border-indigo-800/30 flex items-center justify-between">
+            <div class="px-4 sm:px-5 py-4 border-b border-indigo-800/30">
                 <h3 class="text-sm font-semibold text-white">Daftar Pegawai ({{ $pegawai->total() }})</h3>
             </div>
-            <div class="overflow-x-auto">
+
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-indigo-800/20">
@@ -79,6 +81,53 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile Card List -->
+            <div class="md:hidden divide-y divide-indigo-800/20">
+                @forelse($pegawai as $item)
+                <div class="p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                            {{ strtoupper(substr($item->user->name, 0, 2)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-medium text-white truncate">{{ $item->user->name }}</p>
+                                <span class="text-xs px-2 py-0.5 rounded-full capitalize flex-shrink-0
+                                    {{ $item->user->role === 'admin' ? 'bg-red-500/20 text-red-400' : ($item->user->role === 'hrd' ? 'bg-violet-500/20 text-violet-400' : 'bg-indigo-500/20 text-indigo-300') }}">
+                                    {{ $item->user->role }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-indigo-400 truncate">{{ $item->user->email }}</p>
+                            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                <span class="text-xs text-indigo-300">NIP: {{ $item->nip ?? '—' }}</span>
+                                <span class="text-xs text-indigo-300">{{ $item->jabatan ?? '—' }}</span>
+                                <span class="text-xs text-indigo-300">{{ $item->divisi ?? '—' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <a href="{{ route('admin.pegawai.edit', $item) }}"
+                           class="flex-1 text-center text-xs py-2 rounded-lg bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/40 transition-colors border border-indigo-600/20">
+                            Edit Data
+                        </a>
+                        @if($item->user_id !== auth()->id())
+                        <form method="POST" action="{{ route('admin.pegawai.destroy', $item) }}" onsubmit="return confirm('Hapus pegawai ini?')" class="flex-1">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="w-full text-xs py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors border border-red-500/20">
+                                Hapus
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+                @empty
+                <div class="py-12 text-center">
+                    <p class="text-indigo-400 text-sm">Tidak ada data pegawai</p>
+                </div>
+                @endforelse
+            </div>
+
             @if($pegawai->hasPages())
             <div class="px-5 py-3 border-t border-indigo-800/20">
                 {{ $pegawai->links() }}
