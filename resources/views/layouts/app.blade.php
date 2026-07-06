@@ -7,6 +7,13 @@
     <title>{{ $title ?? config('app.name', 'Absensi LKS') }} — PT Lingkar Kreatif Solusi</title>
     <meta name="description" content="Sistem Absensi Digital PT Lingkar Kreatif Solusi">
     <link rel="icon" type="image/png" href="/Logo-Links.png">
+    
+    <!-- PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Absensi LKS">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -353,5 +360,16 @@
     </script>
 
     @stack('scripts')
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service worker registered!', reg))
+                    .catch(err => console.log('Service worker registration failed: ', err));
+            });
+        }
+    </script>
 </body>
 </html>
