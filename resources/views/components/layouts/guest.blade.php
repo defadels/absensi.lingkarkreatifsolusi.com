@@ -85,7 +85,7 @@
     <div class="relative z-10 w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
-            <div class="flex justify-center mb-4">
+            <div class="flex ju`stify-center mb-4">
                 <div class="rounded-2xl overflow-hidden shadow-2xl"
                     style="box-shadow: 0 0 30px rgba(99,102,241,0.25); background: white; padding: 10px 18px;">
                     <img src="{{ Storage::url('public/logo-links-panjang.png') }}" alt="PT Lingkar Kreatif Solusi"
