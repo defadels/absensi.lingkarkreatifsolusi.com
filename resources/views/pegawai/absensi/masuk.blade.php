@@ -189,16 +189,33 @@
                     body: JSON.stringify({ latitude: currentLat, longitude: currentLng, foto: fotoBase64 }),
                 });
 
-                const data = await res.json();
+                let data;
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    data = await res.json();
+                }
 
-                if (res.ok && data.success) {
+                if (res.ok && data && data.success) {
                     document.getElementById('statusMsg').className = 'rounded-xl p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium';
                     document.getElementById('statusMsg').textContent = '✓ ' + data.message;
                     document.getElementById('statusMsg').classList.remove('hidden');
                     if (stream) stream.getTracks().forEach(t => t.stop());
                     setTimeout(() => window.location.href = '{{ route("pegawai.dashboard") }}', 2000);
                 } else {
-                    throw new Error(data.error || 'Terjadi kesalahan.');
+                    let errMsg = 'Terjadi kesalahan pada server.';
+                    if (data && data.error) {
+                        errMsg = data.error;
+                    } else if (data && data.message) {
+                        errMsg = data.message;
+                    } else {
+                        errMsg = `Server Error (Status: ${res.status}).`;
+                        if (res.status === 419) {
+                            errMsg += ' Sesi Anda telah kedaluwarsa. Silakan refresh halaman ini.';
+                        } else if (res.status === 413) {
+                            errMsg += ' Ukuran file foto terlalu besar untuk diunggah. Silakan hubungi admin untuk menaikkan limit upload.';
+                        }
+                    }
+                    throw new Error(errMsg);
                 }
             } catch(e) {
                 document.getElementById('statusMsg').className = 'rounded-xl p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium';
