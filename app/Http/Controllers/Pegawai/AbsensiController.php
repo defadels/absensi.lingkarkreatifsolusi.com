@@ -107,7 +107,7 @@ class AbsensiController extends Controller
 
         // Determine status: hadir or terlambat
         $batasWaktu = now()->setTimeFromTimeString($lokasiAktif->jam_masuk_standar)
-            ->addMinutes($lokasiAktif->toleransi_menit);
+            ->addMinutes((int) $lokasiAktif->toleransi_menit);
         $status = now()->greaterThan($batasWaktu) ? 'terlambat' : 'hadir';
 
         $absensi = Absensi::create([
