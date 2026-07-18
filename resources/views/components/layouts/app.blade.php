@@ -242,7 +242,7 @@
         {{-- Logo + tombol close (mobile) --}}
         <div
             style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(99,102,241,0.2); flex-shrink:0;">
-            <img src="{{ Storage::url('public/logo-links.png') }}" alt="Logo"
+            <img src="{{ asset('storage/logo-links.png') }}" alt="Logo"
                 style="width:38px; height:38px; border-radius:8px; object-fit:contain; background:white; padding:2px; flex-shrink:0;">
             <div style="min-width:0; flex:1;">
                 <p

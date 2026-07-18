@@ -137,10 +137,18 @@
 
         // Capture photo
         document.getElementById('captureBtn').addEventListener('click', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-            fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            // Compress and resize image to avoid payload size issues
+            const maxW = 640;
+            let w = video.videoWidth;
+            let h = video.videoHeight;
+            if (w > maxW) {
+                h = Math.round((h * maxW) / w);
+                w = maxW;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            ctx.drawImage(video, 0, 0, w, h);
+            fotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
             video.classList.add('hidden');
             canvas.classList.remove('hidden');
