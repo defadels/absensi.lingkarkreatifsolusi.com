@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\LokasiKerja;
 use App\Models\Pegawai;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -14,64 +15,92 @@ class AbsensiController extends Controller
     {
         $tanggal  = $request->get('tanggal', now()->toDateString());
         $pegawaiId = $request->get('pegawai_id');
+        $lokasiId  = $request->get('lokasi_id');
 
-        $query = Absensi::with(['pegawai.user', 'lokasi_kerja'])
+        $query = Absensi::with(['pegawai.user', 'pegawai.lokasiKerja', 'lokasi_kerja'])
             ->where('tanggal', $tanggal);
 
         if ($pegawaiId) {
             $query->where('pegawai_id', $pegawaiId);
         }
 
-        $absensi  = $query->latest()->paginate(20)->withQueryString();
-        $pegawai  = Pegawai::with('user')->get();
+        if ($lokasiId) {
+            $query->where('lokasi_kerja_id', $lokasiId);
+        }
 
-        return view('admin.absensi.index', compact('absensi', 'pegawai', 'tanggal', 'pegawaiId'));
+        $absensi    = $query->latest()->paginate(20)->withQueryString();
+        $pegawai    = Pegawai::with('user')->get();
+        $lokasiList = LokasiKerja::orderBy('nama_lokasi')->get();
+
+        return view('admin.absensi.index', compact(
+            'absensi', 'pegawai', 'lokasiList', 'tanggal', 'pegawaiId', 'lokasiId'
+        ));
     }
 
     public function show(Absensi $absensi)
     {
-        $absensi->load(['pegawai.user', 'lokasi_kerja']);
+        $absensi->load(['pegawai.user', 'pegawai.lokasiKerja', 'lokasi_kerja']);
         return view('admin.absensi.show', compact('absensi'));
     }
 
     public function rekap(Request $request)
     {
-        $tanggalMulai  = $request->get('tanggal_mulai', now()->startOfMonth()->toDateString());
+        $tanggalMulai   = $request->get('tanggal_mulai', now()->startOfMonth()->toDateString());
         $tanggalSelesai = $request->get('tanggal_selesai', now()->toDateString());
-        $pegawaiId     = $request->get('pegawai_id');
+        $pegawaiId      = $request->get('pegawai_id');
+        $lokasiId       = $request->get('lokasi_id');
 
-        $pegawaiList = Pegawai::with(['user', 'absensi' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
-            $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
-        }, 'izin' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
-            $q->where('status_persetujuan', 'diterima')
-              ->where(function ($q2) use ($tanggalMulai, $tanggalSelesai) {
-                  $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])
-                     ->orWhereBetween('tanggal_selesai', [$tanggalMulai, $tanggalSelesai]);
-              });
-        }])->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))->get();
+        $pegawaiList = Pegawai::with([
+            'user',
+            'lokasiKerja',
+            'absensi' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+            },
+            'izin' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->where('status_persetujuan', 'diterima')
+                  ->where(function ($q2) use ($tanggalMulai, $tanggalSelesai) {
+                      $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])
+                         ->orWhereBetween('tanggal_selesai', [$tanggalMulai, $tanggalSelesai]);
+                  });
+            },
+        ])
+        ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+        ->when($lokasiId, fn($q) => $q->where('lokasi_kerja_id', $lokasiId))
+        ->get();
 
         $pegawaiDropdown = Pegawai::with('user')->get();
+        $lokasiList      = LokasiKerja::orderBy('nama_lokasi')->get();
 
         return view('admin.absensi.rekap', compact(
-            'pegawaiList', 'tanggalMulai', 'tanggalSelesai', 'pegawaiDropdown', 'pegawaiId'
+            'pegawaiList', 'tanggalMulai', 'tanggalSelesai',
+            'pegawaiDropdown', 'lokasiList', 'pegawaiId', 'lokasiId'
         ));
     }
 
     public function exportPdf(Request $request)
     {
-        $tanggalMulai  = $request->get('tanggal_mulai', now()->startOfMonth()->toDateString());
+        $tanggalMulai   = $request->get('tanggal_mulai', now()->startOfMonth()->toDateString());
         $tanggalSelesai = $request->get('tanggal_selesai', now()->toDateString());
-        $pegawaiId     = $request->get('pegawai_id');
+        $pegawaiId      = $request->get('pegawai_id');
+        $lokasiId       = $request->get('lokasi_id');
 
-        $pegawaiList = Pegawai::with(['user', 'absensi' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
-            $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
-        }, 'izin' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
-            $q->where('status_persetujuan', 'diterima')
-              ->where(function ($q2) use ($tanggalMulai, $tanggalSelesai) {
-                  $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])
-                     ->orWhereBetween('tanggal_selesai', [$tanggalMulai, $tanggalSelesai]);
-              });
-        }])->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))->get();
+        $pegawaiList = Pegawai::with([
+            'user',
+            'lokasiKerja',
+            'absensi' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+            },
+            'izin' => function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                $q->where('status_persetujuan', 'diterima')
+                  ->where(function ($q2) use ($tanggalMulai, $tanggalSelesai) {
+                      $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])
+                         ->orWhereBetween('tanggal_selesai', [$tanggalMulai, $tanggalSelesai]);
+                  });
+            },
+        ])
+        ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+        ->when($lokasiId, fn($q) => $q->where('lokasi_kerja_id', $lokasiId))
+        ->get();
 
         $pdf = Pdf::loadView('pdf.rekap-absensi', compact(
             'pegawaiList', 'tanggalMulai', 'tanggalSelesai'

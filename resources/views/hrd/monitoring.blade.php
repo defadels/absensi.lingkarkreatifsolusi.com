@@ -31,6 +31,15 @@
                         class="input-field w-full rounded-xl px-3 py-2 text-white text-sm">
                 </div>
                 <div class="w-full sm:w-auto">
+                    <label class="block text-xs text-indigo-400 mb-1">Lokasi Kerja</label>
+                    <select name="lokasi_id" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm sm:min-w-36">
+                        <option value="">Semua Lokasi</option>
+                        @foreach($lokasiList as $lok)
+                            <option value="{{ $lok->id }}" {{ $lokasiId == $lok->id ? 'selected' : '' }}>{{ $lok->nama_lokasi }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Pegawai</label>
                     <select name="pegawai_id" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm sm:min-w-40">
                         <option value="">Semua Pegawai</option>
@@ -59,7 +68,7 @@
                     <thead>
                         <tr class="border-b border-indigo-800/20">
                             <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Pegawai</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Jabatan</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Lokasi</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Masuk</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Pulang</th>
                             <th class="px-5 py-3 text-left text-xs font-semibold text-indigo-400 uppercase">Status</th>
@@ -77,7 +86,12 @@
                                     <p class="font-medium text-white text-xs">{{ $item->pegawai->user->name }}</p>
                                 </div>
                             </td>
-                            <td class="px-5 py-3.5 text-xs text-indigo-300">{{ $item->pegawai->jabatan ?? '—' }}</td>
+                            <td class="px-5 py-3.5">
+                                <p class="text-xs text-indigo-300">{{ $item->pegawai->jabatan ?? '—' }}</p>
+                                @if($item->lokasi_kerja)
+                                <p class="text-xs text-indigo-500 mt-0.5">📍 {{ $item->lokasi_kerja->nama_lokasi }}</p>
+                                @endif
+                            </td>
                             <td class="px-5 py-3.5 text-white">{{ $item->jam_masuk ? \Carbon\Carbon::parse($item->jam_masuk)->format('H:i') : '—' }}</td>
                             <td class="px-5 py-3.5 text-white">{{ $item->jam_pulang ? \Carbon\Carbon::parse($item->jam_pulang)->format('H:i') : '—' }}</td>
                             <td class="px-5 py-3.5">
@@ -102,6 +116,9 @@
                             <div>
                                 <p class="font-medium text-white text-sm">{{ $item->pegawai->user->name }}</p>
                                 <p class="text-xs text-indigo-400">{{ $item->pegawai->jabatan ?? '—' }}</p>
+                                @if($item->lokasi_kerja)
+                                <p class="text-xs text-indigo-500">📍 {{ $item->lokasi_kerja->nama_lokasi }}</p>
+                                @endif
                             </div>
                         </div>
                         <span class="text-xs px-2.5 py-1 rounded-full badge-{{ $item->status }}">{{ ucfirst($item->status) }}</span>

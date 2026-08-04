@@ -87,23 +87,30 @@
                 @endif
             </div>
 
-            <!-- Lokasi Kerja -->
+            <!-- Lokasi Kerja (yang ditetapkan) -->
             <div class="glass-card rounded-2xl p-4 sm:p-5 stat-card">
-                <div class="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center mb-3 sm:mb-4">
-                    <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-10 h-10 rounded-xl {{ $lokasiAktif ? 'bg-teal-500/20' : 'bg-amber-500/20' }} flex items-center justify-center mb-3 sm:mb-4">
+                    <svg class="w-5 h-5 {{ $lokasiAktif ? 'text-teal-400' : 'text-amber-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     </svg>
                 </div>
-                <p class="text-sm text-indigo-300 mb-1">Lokasi Kerja</p>
+                <p class="text-sm text-indigo-300 mb-1">Lokasi Absensi Saya</p>
                 @if($lokasiAktif)
                     <p class="text-base font-semibold text-white leading-tight">{{ $lokasiAktif->nama_lokasi }}</p>
-                    <p class="text-xs text-indigo-400 mt-1">Radius {{ $lokasiAktif->radius_meter }}m • Masuk {{ substr($lokasiAktif->jam_masuk_standar, 0, 5) }}</p>
+                    <p class="text-xs text-indigo-400 mt-1">
+                        Radius {{ $lokasiAktif->radius_meter }}m &nbsp;·&nbsp;
+                        Masuk {{ substr($lokasiAktif->jam_masuk_standar, 0, 5) }}
+                        @if($lokasiAktif->toleransi_menit > 0)
+                            <span class="text-indigo-500">(±{{ $lokasiAktif->toleransi_menit }}m)</span>
+                        @endif
+                    </p>
                 @else
-                    <p class="text-base font-semibold text-red-400">Tidak ada lokasi aktif</p>
-                    <p class="text-xs text-red-400/70 mt-1">Hubungi admin</p>
+                    <p class="text-sm font-semibold text-amber-400">Belum ditetapkan</p>
+                    <p class="text-xs text-amber-400/70 mt-1">Hubungi admin untuk penetapan lokasi</p>
                 @endif
             </div>
         </div>
+
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">

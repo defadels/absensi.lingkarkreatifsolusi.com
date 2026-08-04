@@ -25,11 +25,14 @@
                                 {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1 text-xs text-indigo-400">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-1 text-xs text-indigo-400">
                             <span>📍 {{ number_format($item->latitude, 6) }}, {{ number_format($item->longitude, 6) }}</span>
                             <span>⭕ Radius: {{ $item->radius_meter }}m</span>
                             <span>🕗 Masuk: {{ substr($item->jam_masuk_standar, 0, 5) }}</span>
                             <span>⏱ Toleransi: {{ $item->toleransi_menit }} menit</span>
+                            <span class="font-medium {{ $item->pegawai_count > 0 ? 'text-indigo-300' : 'text-amber-400' }}">
+                                👥 {{ $item->pegawai_count }} karyawan
+                            </span>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 flex-shrink-0 sm:flex-col sm:items-end">
