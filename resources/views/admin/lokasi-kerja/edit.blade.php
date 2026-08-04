@@ -115,6 +115,53 @@
                     </div>
                 </div>
 
+                {{-- =================== PENETAPAN KARYAWAN =================== --}}
+                <div class="border-t border-indigo-800/30 pt-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-sm font-semibold text-indigo-200">Karyawan di Lokasi Ini</p>
+                            <p class="text-xs text-indigo-400 mt-0.5">Pilih karyawan yang akan absensi di lokasi ini</p>
+                        </div>
+                        <span id="selectedCount" class="text-xs px-2.5 py-1 rounded-full bg-indigo-600/20 text-indigo-300 border border-indigo-600/20">
+                            0 dipilih
+                        </span>
+                    </div>
+
+                    <input type="text" id="pegawaiSearch" placeholder="Cari nama atau NIP karyawan..."
+                        class="input-field w-full rounded-xl px-4 py-2 text-white text-sm placeholder-indigo-400/50 mb-3">
+
+                    <div id="pegawaiListContainer"
+                         class="rounded-xl border border-indigo-700/30 divide-y divide-indigo-800/20 overflow-hidden"
+                         style="max-height: 280px; overflow-y: auto;">
+                        @forelse($pegawaiList as $p)
+                        <label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-indigo-600/10 transition-colors pegawai-item"
+                               data-name="{{ strtolower($p->user->name) }}"
+                               data-nip="{{ strtolower($p->nip ?? '') }}">
+                            <input type="checkbox" name="pegawai_ids[]" value="{{ $p->id }}"
+                                   class="pegawai-checkbox accent-indigo-500 w-4 h-4 rounded"
+                                   @if(in_array($p->id, old('pegawai_ids', $assignedIds))) checked @endif>
+                            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                {{ strtoupper(substr($p->user->name, 0, 2)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-white font-medium truncate">{{ $p->user->name }}</p>
+                                <p class="text-xs text-indigo-400">
+                                    {{ $p->nip ? 'NIP: ' . $p->nip : 'No NIP' }}
+                                    @if($p->jabatan) · {{ $p->jabatan }} @endif
+                                </p>
+                            </div>
+                            @if(in_array($p->id, $assignedIds))
+                            <span class="text-xs text-emerald-400 flex-shrink-0">● Terdaftar</span>
+                            @endif
+                        </label>
+                        @empty
+                        <div class="px-4 py-8 text-center text-indigo-400 text-sm">
+                            Semua karyawan sudah ditetapkan di lokasi lain
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+
                 <div class="flex gap-3 pt-2">
                     <a href="{{ route('admin.lokasi-kerja.index') }}"
                        class="flex-1 py-2.5 rounded-xl text-center text-sm text-indigo-300 border border-indigo-700/50 hover:border-indigo-500 transition-all">
@@ -125,6 +172,7 @@
                         Simpan Perubahan
                     </button>
                 </div>
+
             </form>
         </div>
     </div>
@@ -291,6 +339,37 @@
                 searchResults.innerHTML = `<div class="search-result-item text-red-400">Gagal mencari: ${err.message}</div>`;
             }
         }
+    })();
+
+    /* ── Pegawai Search Filter ── */
+    (function () {
+        const pegawaiSearch = document.getElementById('pegawaiSearch');
+        const selectedCount = document.getElementById('selectedCount');
+
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('.pegawai-checkbox:checked').length;
+            selectedCount.textContent = checked + ' dipilih';
+            selectedCount.className = checked > 0
+                ? 'text-xs px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-500/40'
+                : 'text-xs px-2.5 py-1 rounded-full bg-indigo-600/20 text-indigo-300 border border-indigo-600/20';
+        }
+
+        document.querySelectorAll('.pegawai-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+
+        if (pegawaiSearch) {
+            pegawaiSearch.addEventListener('input', function () {
+                const q = this.value.toLowerCase();
+                document.querySelectorAll('.pegawai-item').forEach(row => {
+                    const name = row.dataset.name || '';
+                    const nip  = row.dataset.nip || '';
+                    row.style.display = (name.includes(q) || nip.includes(q)) ? '' : 'none';
+                });
+            });
+        }
+
+        updateSelectedCount();
     })();
     </script>
     @endpush

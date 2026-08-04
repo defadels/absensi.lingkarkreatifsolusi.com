@@ -28,33 +28,53 @@ class AbsensiController extends Controller
         return $earthRadius * $c;
     }
 
+    /**
+     * Dapatkan lokasi kerja yang ditetapkan untuk karyawan login.
+     * Mengembalikan null jika belum ditetapkan.
+     */
+    private function getLokasiPegawai(): ?LokasiKerja
+    {
+        $pegawai = auth()->user()->pegawai;
+
+        if (!$pegawai || !$pegawai->lokasi_kerja_id) {
+            return null;
+        }
+
+        return $pegawai->lokasiKerja;
+    }
+
     public function dashboard()
     {
         $user    = auth()->user();
         $pegawai = $user->pegawai;
 
         if (!$pegawai) {
-            return view('pegawai.dashboard', ['absensiHariIni' => null, 'pegawai' => null]);
+            return view('pegawai.dashboard', [
+                'absensiHariIni' => null,
+                'pegawai'        => null,
+                'lokasiAktif'    => null,
+            ]);
         }
 
         $absensiHariIni = Absensi::where('pegawai_id', $pegawai->id)
             ->where('tanggal', now()->toDateString())
             ->first();
 
-        $lokasiAktif = LokasiKerja::where('is_active', true)->first();
+        // Lokasi yang ditetapkan untuk karyawan ini
+        $lokasiAktif = $this->getLokasiPegawai();
 
         return view('pegawai.dashboard', compact('absensiHariIni', 'pegawai', 'lokasiAktif'));
     }
 
     public function masukForm()
     {
-        $lokasiAktif = LokasiKerja::where('is_active', true)->first();
+        $pegawai     = auth()->user()->pegawai;
+        $lokasiAktif = $this->getLokasiPegawai();
 
         if (!$lokasiAktif) {
-            return back()->with('error', 'Belum ada lokasi kerja aktif. Hubungi admin.');
+            return back()->with('error', 'Anda belum ditetapkan lokasi kerja. Silakan hubungi Admin.');
         }
 
-        $pegawai = auth()->user()->pegawai;
         $absensiHariIni = Absensi::where('pegawai_id', $pegawai->id)
             ->where('tanggal', now()->toDateString())->first();
 
@@ -74,13 +94,16 @@ class AbsensiController extends Controller
             'foto'      => ['required', 'string'], // base64 image
         ]);
 
-        $lokasiAktif = LokasiKerja::where('is_active', true)->first();
+        $pegawai     = auth()->user()->pegawai;
+        $lokasiAktif = $this->getLokasiPegawai();
 
         if (!$lokasiAktif) {
-            return response()->json(['error' => 'Tidak ada lokasi kerja aktif.'], 422);
+            return response()->json([
+                'error' => 'Anda belum ditetapkan lokasi kerja. Silakan hubungi Admin.'
+            ], 422);
         }
 
-        // Server-side Haversine validation
+        // Server-side Haversine validation against assigned location
         $jarak = $this->hitungJarak(
             $request->latitude, $request->longitude,
             $lokasiAktif->latitude, $lokasiAktif->longitude
@@ -88,11 +111,10 @@ class AbsensiController extends Controller
 
         if ($jarak > $lokasiAktif->radius_meter) {
             return response()->json([
-                'error' => "Anda berada di luar area kantor. Jarak Anda: " . round($jarak) . " meter (maks: {$lokasiAktif->radius_meter} meter)."
+                'error' => "Anda berada di luar area {$lokasiAktif->nama_lokasi}. " .
+                           "Jarak Anda: " . round($jarak) . " meter (maks: {$lokasiAktif->radius_meter} meter)."
             ], 422);
         }
-
-        $pegawai = auth()->user()->pegawai;
 
         // Check if already checked in today
         $existing = Absensi::where('pegawai_id', $pegawai->id)
@@ -110,16 +132,16 @@ class AbsensiController extends Controller
             ->addMinutes((int) $lokasiAktif->toleransi_menit);
         $status = now()->greaterThan($batasWaktu) ? 'terlambat' : 'hadir';
 
-        $absensi = Absensi::create([
-            'pegawai_id'       => $pegawai->id,
-            'lokasi_kerja_id'  => $lokasiAktif->id,
-            'tanggal'          => now()->toDateString(),
-            'jam_masuk'        => now()->format('H:i:s'),
-            'latitude_masuk'   => $request->latitude,
-            'longitude_masuk'  => $request->longitude,
+        Absensi::create([
+            'pegawai_id'        => $pegawai->id,
+            'lokasi_kerja_id'   => $lokasiAktif->id,
+            'tanggal'           => now()->toDateString(),
+            'jam_masuk'         => now()->format('H:i:s'),
+            'latitude_masuk'    => $request->latitude,
+            'longitude_masuk'   => $request->longitude,
             'jarak_masuk_meter' => round($jarak),
-            'foto_masuk'       => $fotoPath,
-            'status'           => $status,
+            'foto_masuk'        => $fotoPath,
+            'status'            => $status,
         ]);
 
         return response()->json([
@@ -132,7 +154,7 @@ class AbsensiController extends Controller
 
     public function pulangForm()
     {
-        $pegawai = auth()->user()->pegawai;
+        $pegawai        = auth()->user()->pegawai;
         $absensiHariIni = Absensi::where('pegawai_id', $pegawai->id)
             ->where('tanggal', now()->toDateString())->first();
 
@@ -146,7 +168,7 @@ class AbsensiController extends Controller
                 ->with('info', 'Anda sudah melakukan absen pulang hari ini.');
         }
 
-        $lokasiAktif = LokasiKerja::where('is_active', true)->first();
+        $lokasiAktif = $this->getLokasiPegawai();
 
         return view('pegawai.absensi.pulang', compact('absensiHariIni', 'lokasiAktif'));
     }
@@ -159,13 +181,16 @@ class AbsensiController extends Controller
             'foto'      => ['required', 'string'],
         ]);
 
-        $lokasiAktif = LokasiKerja::where('is_active', true)->first();
+        $pegawai     = auth()->user()->pegawai;
+        $lokasiAktif = $this->getLokasiPegawai();
 
         if (!$lokasiAktif) {
-            return response()->json(['error' => 'Tidak ada lokasi kerja aktif.'], 422);
+            return response()->json([
+                'error' => 'Anda belum ditetapkan lokasi kerja. Silakan hubungi Admin.'
+            ], 422);
         }
 
-        // Server-side Haversine validation
+        // Server-side Haversine validation against assigned location
         $jarak = $this->hitungJarak(
             $request->latitude, $request->longitude,
             $lokasiAktif->latitude, $lokasiAktif->longitude
@@ -173,11 +198,11 @@ class AbsensiController extends Controller
 
         if ($jarak > $lokasiAktif->radius_meter) {
             return response()->json([
-                'error' => "Anda berada di luar area kantor. Jarak Anda: " . round($jarak) . " meter (maks: {$lokasiAktif->radius_meter} meter)."
+                'error' => "Anda berada di luar area {$lokasiAktif->nama_lokasi}. " .
+                           "Jarak Anda: " . round($jarak) . " meter (maks: {$lokasiAktif->radius_meter} meter)."
             ], 422);
         }
 
-        $pegawai = auth()->user()->pegawai;
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
             ->where('tanggal', now()->toDateString())
             ->whereNotNull('jam_masuk')
@@ -187,11 +212,11 @@ class AbsensiController extends Controller
         $fotoPath = $this->simpanFotoBase64($request->foto, 'pulang');
 
         $absensi->update([
-            'jam_pulang'        => now()->format('H:i:s'),
-            'latitude_pulang'   => $request->latitude,
-            'longitude_pulang'  => $request->longitude,
+            'jam_pulang'         => now()->format('H:i:s'),
+            'latitude_pulang'    => $request->latitude,
+            'longitude_pulang'   => $request->longitude,
             'jarak_pulang_meter' => round($jarak),
-            'foto_pulang'       => $fotoPath,
+            'foto_pulang'        => $fotoPath,
         ]);
 
         return response()->json([
@@ -208,7 +233,8 @@ class AbsensiController extends Controller
         $bulan = $request->get('bulan', now()->month);
         $tahun = $request->get('tahun', now()->year);
 
-        $absensi = Absensi::where('pegawai_id', $pegawai->id)
+        $absensi = Absensi::with('lokasi_kerja')
+            ->where('pegawai_id', $pegawai->id)
             ->whereYear('tanggal', $tahun)
             ->whereMonth('tanggal', $bulan)
             ->orderBy('tanggal', 'desc')

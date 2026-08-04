@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\LokasiKerja;
 use App\Models\Pegawai;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -14,25 +15,31 @@ class AbsensiController extends Controller
     {
         $tanggal   = $request->get('tanggal', now()->toDateString());
         $pegawaiId = $request->get('pegawai_id');
+        $lokasiId  = $request->get('lokasi_id');
 
-        $query = Absensi::with(['pegawai.user', 'lokasi_kerja'])
+        $query = Absensi::with(['pegawai.user', 'pegawai.lokasiKerja', 'lokasi_kerja'])
             ->where('tanggal', $tanggal);
 
         if ($pegawaiId) {
             $query->where('pegawai_id', $pegawaiId);
         }
 
+        if ($lokasiId) {
+            $query->where('lokasi_kerja_id', $lokasiId);
+        }
+
         $absensi = $query->latest()->paginate(20)->withQueryString();
         $pegawai = Pegawai::with('user')->get();
+        $lokasiList = LokasiKerja::orderBy('nama_lokasi')->get();
 
-        // Stats for today
-        $totalPegawai  = Pegawai::count();
-        $totalHadir    = Absensi::where('tanggal', $tanggal)->where('status', 'hadir')->count();
+        // Stats for today — hanya pegawai yang sudah ditetapkan lokasi
+        $totalPegawai   = Pegawai::whereNotNull('lokasi_kerja_id')->count();
+        $totalHadir     = Absensi::where('tanggal', $tanggal)->where('status', 'hadir')->count();
         $totalTerlambat = Absensi::where('tanggal', $tanggal)->where('status', 'terlambat')->count();
-        $totalAlpha    = $totalPegawai - $totalHadir - $totalTerlambat;
+        $totalAlpha     = $totalPegawai - $totalHadir - $totalTerlambat;
 
         return view('hrd.monitoring', compact(
-            'absensi', 'pegawai', 'tanggal', 'pegawaiId',
+            'absensi', 'pegawai', 'lokasiList', 'tanggal', 'pegawaiId', 'lokasiId',
             'totalPegawai', 'totalHadir', 'totalTerlambat', 'totalAlpha'
         ));
     }
@@ -42,11 +49,12 @@ class AbsensiController extends Controller
         $bulan = $request->get('bulan', now()->month);
         $tahun = $request->get('tahun', now()->year);
 
-        $tanggalMulai  = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
+        $tanggalMulai   = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
         $tanggalSelesai = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth()->toDateString();
 
         $pegawaiList = Pegawai::with([
             'user',
+            'lokasiKerja',
             'absensi' => fn($q) => $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]),
             'izin'    => fn($q) => $q->where('status_persetujuan', 'diterima')
                 ->where(fn($q2) => $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])
@@ -61,13 +69,14 @@ class AbsensiController extends Controller
         $bulan = $request->get('bulan', now()->month);
         $tahun = $request->get('tahun', now()->year);
 
-        $tanggalMulai  = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
+        $tanggalMulai   = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
         $tanggalSelesai = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth()->toDateString();
 
         $bulanNama = \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F');
 
         $pegawaiList = Pegawai::with([
             'user',
+            'lokasiKerja',
             'absensi' => fn($q) => $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]),
             'izin'    => fn($q) => $q->where('status_persetujuan', 'diterima')
                 ->where(fn($q2) => $q2->whereBetween('tanggal_mulai', [$tanggalMulai, $tanggalSelesai])

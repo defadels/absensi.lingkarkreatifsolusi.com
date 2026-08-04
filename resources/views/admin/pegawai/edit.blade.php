@@ -74,6 +74,22 @@
                     </div>
 
                     <div class="mt-4">
+                        <label class="block text-sm font-medium text-indigo-200 mb-1.5">Lokasi Kerja</label>
+                        <select name="lokasi_kerja_id" class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm">
+                            <option value="">— Belum ditetapkan —</option>
+                            @foreach($lokasiList as $lok)
+                            <option value="{{ $lok->id }}"
+                                {{ old('lokasi_kerja_id', $pegawai->lokasi_kerja_id) == $lok->id ? 'selected' : '' }}>
+                                {{ $lok->nama_lokasi }}
+                                (Masuk: {{ substr($lok->jam_masuk_standar, 0, 5) }})
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('lokasi_kerja_id') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-indigo-500">Karyawan hanya bisa absensi di lokasi yang ditetapkan</p>
+                    </div>
+
+                    <div class="mt-4">
                         <label class="block text-sm font-medium text-indigo-200 mb-1.5">Alamat</label>
                         <textarea name="alamat" rows="2" placeholder="Alamat lengkap pegawai"
                             class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm resize-none">{{ old('alamat', $pegawai->alamat) }}</textarea>

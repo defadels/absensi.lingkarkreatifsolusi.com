@@ -18,10 +18,15 @@ class LokasiKerja extends Model
     ];
 
     protected $casts = [
-        'radius_meter' => 'integer',
+        'radius_meter'    => 'integer',
         'toleransi_menit' => 'integer',
-        'is_active' => 'boolean',
+        'is_active'       => 'boolean',
     ];
+
+    public function pegawai()
+    {
+        return $this->hasMany(Pegawai::class, 'lokasi_kerja_id');
+    }
 
     public function absensi()
     {

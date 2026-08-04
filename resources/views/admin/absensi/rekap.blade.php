@@ -17,6 +17,15 @@
                         class="input-field w-full rounded-xl px-3 py-2 text-white text-sm">
                 </div>
                 <div class="w-full sm:w-auto">
+                    <label class="block text-xs text-indigo-400 mb-1">Lokasi Kerja</label>
+                    <select name="lokasi_id" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm sm:min-w-36">
+                        <option value="">Semua Lokasi</option>
+                        @foreach($lokasiList as $lok)
+                            <option value="{{ $lok->id }}" {{ $lokasiId == $lok->id ? 'selected' : '' }}>{{ $lok->nama_lokasi }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs text-indigo-400 mb-1">Pegawai</label>
                     <select name="pegawai_id" class="input-field w-full rounded-xl px-3 py-2 text-white text-sm sm:min-w-40">
                         <option value="">Semua Pegawai</option>
@@ -75,6 +84,11 @@
                                     <div>
                                         <p class="font-medium text-white text-xs">{{ $item->user->name }}</p>
                                         <p class="text-indigo-400 text-xs">{{ $item->nip ?? $item->jabatan ?? '—' }}</p>
+                                        @if($item->lokasiKerja)
+                                        <p class="text-indigo-500 text-xs">📍 {{ $item->lokasiKerja->nama_lokasi }}</p>
+                                        @else
+                                        <p class="text-amber-500 text-xs">⚠ Belum ada lokasi</p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
