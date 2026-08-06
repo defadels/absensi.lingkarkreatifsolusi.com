@@ -87,8 +87,15 @@ class PegawaiController extends Controller
     public function destroy(Pegawai $pegawai)
     {
         $user = $pegawai->user;
+
+        // Hapus data terkait terlebih dahulu untuk menghindari foreign key constraint
+        $pegawai->absensi()->delete();
+        $pegawai->izin()->delete();
         $pegawai->delete();
-        $user->delete();
+
+        if ($user) {
+            $user->delete();
+        }
 
         return redirect()->route('admin.pegawai.index')
             ->with('success', 'Data pegawai berhasil dihapus.');
