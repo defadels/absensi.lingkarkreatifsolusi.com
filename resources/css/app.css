@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Keep native select menus legible across operating-system themes. */
+select {
+    color-scheme: dark;
+}
+
+select option {
+    color: #f8fafc;
+    background-color: #1e1b4b;
+}
+
+select option:checked {
+    color: #ffffff;
+    background-color: #4f46e5;
+}

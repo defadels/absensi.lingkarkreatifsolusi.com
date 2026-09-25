@@ -18,7 +18,7 @@
                         <h2 class="text-lg font-bold text-white">{{ $pegawai->user->name }}</h2>
                         <span class="text-xs px-2 py-0.5 rounded-full capitalize
                             {{ $pegawai->user->role === 'admin' ? 'bg-red-500/20 text-red-400' : ($pegawai->user->role === 'hrd' ? 'bg-violet-500/20 text-violet-400' : 'bg-indigo-500/20 text-indigo-300') }}">
-                            {{ $pegawai->user->role }}
+                            {{ $pegawai->user->role === 'pegawai' ? 'Karyawan' : ($pegawai->user->role === 'hrd' ? 'HRD' : 'Admin') }}
                         </span>
                     </div>
                     <p class="text-sm text-indigo-400 mt-0.5">{{ $pegawai->user->email }}</p>

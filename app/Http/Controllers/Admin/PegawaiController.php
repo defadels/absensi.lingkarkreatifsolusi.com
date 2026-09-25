@@ -8,7 +8,10 @@ use App\Models\LokasiKerja;
 use App\Models\Pegawai;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 
 class PegawaiController extends Controller
 {
@@ -34,6 +37,56 @@ class PegawaiController extends Controller
         $lokasiList = LokasiKerja::orderBy('nama_lokasi')->get();
 
         return view('admin.pegawai.index', compact('pegawai', 'lokasiList'));
+    }
+
+    public function create()
+    {
+        $lokasiList = LokasiKerja::where('is_active', true)->orderBy('nama_lokasi')->get();
+
+        return view('admin.pegawai.create', compact('lokasiList'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'            => ['required', 'string', 'max:255'],
+            'email'           => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'no_hp'           => ['nullable', 'string', 'max:20'],
+            'role'            => ['required', 'in:admin,pegawai,hrd'],
+            'password'        => ['required', 'confirmed', Rules\Password::defaults()],
+            'nip'             => ['nullable', 'string', 'max:50', 'unique:pegawai,nip'],
+            'jabatan'         => ['nullable', 'string', 'max:100'],
+            'divisi'          => ['nullable', 'string', 'max:100'],
+            'alamat'          => ['nullable', 'string'],
+            'lokasi_kerja_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('lokasi_kerja', 'id')->where('is_active', true),
+            ],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'no_hp'    => $validated['no_hp'] ?? null,
+                'role'     => $validated['role'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            return Pegawai::create([
+                'user_id'        => $user->id,
+                'lokasi_kerja_id' => $validated['lokasi_kerja_id'] ?? null,
+                'nip'             => $validated['nip'] ?? null,
+                'jabatan'         => $validated['jabatan'] ?? null,
+                'divisi'          => $validated['divisi'] ?? null,
+                'no_hp'           => $validated['no_hp'] ?? null,
+                'alamat'          => $validated['alamat'] ?? null,
+            ]);
+        });
+
+        return redirect()->route('admin.pegawai.index')
+            ->with('success', "Akun {$validated['name']} berhasil ditambahkan.");
     }
 
     public function show(Pegawai $pegawai)

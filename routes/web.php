@@ -67,6 +67,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Pegawai management
     Route::get('/pegawai', [Admin\PegawaiController::class, 'index'])->name('pegawai.index');
+    Route::get('/pegawai/create', [Admin\PegawaiController::class, 'create'])->name('pegawai.create');
+    Route::post('/pegawai', [Admin\PegawaiController::class, 'store'])->name('pegawai.store');
     Route::get('/pegawai/{pegawai}', [Admin\PegawaiController::class, 'show'])->name('pegawai.show');
     Route::get('/pegawai/{pegawai}/edit', [Admin\PegawaiController::class, 'edit'])->name('pegawai.edit');
     Route::patch('/pegawai/{pegawai}', [Admin\PegawaiController::class, 'update'])->name('pegawai.update');

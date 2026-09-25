@@ -22,8 +22,11 @@
 
         <!-- Table -->
         <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="px-4 sm:px-5 py-4 border-b border-indigo-800/30">
+            <div class="px-4 sm:px-5 py-4 border-b border-indigo-800/30 flex items-center justify-between gap-3">
                 <h3 class="text-sm font-semibold text-white">Daftar Pegawai ({{ $pegawai->total() }})</h3>
+                <a href="{{ route('admin.pegawai.create') }}" class="btn-primary px-4 py-2 rounded-xl text-sm text-white font-medium flex-shrink-0">
+                    + Tambah Pegawai
+                </a>
             </div>
 
             <!-- Desktop Table -->
@@ -72,7 +75,7 @@
                             <td class="px-5 py-3.5">
                                 <span class="text-xs px-2 py-1 rounded-full capitalize
                                     {{ $item->user->role === 'admin' ? 'bg-red-500/20 text-red-400' : ($item->user->role === 'hrd' ? 'bg-violet-500/20 text-violet-400' : 'bg-indigo-500/20 text-indigo-300') }}">
-                                    {{ $item->user->role }}
+                                    {{ $item->user->role === 'pegawai' ? 'Karyawan' : ($item->user->role === 'hrd' ? 'HRD' : 'Admin') }}
                                 </span>
                             </td>
                             <td class="px-5 py-3.5">
@@ -118,7 +121,7 @@
                                 <p class="font-medium text-white truncate">{{ $item->user->name }}</p>
                                 <span class="text-xs px-2 py-0.5 rounded-full capitalize flex-shrink-0
                                     {{ $item->user->role === 'admin' ? 'bg-red-500/20 text-red-400' : ($item->user->role === 'hrd' ? 'bg-violet-500/20 text-violet-400' : 'bg-indigo-500/20 text-indigo-300') }}">
-                                    {{ $item->user->role }}
+                                    {{ $item->user->role === 'pegawai' ? 'Karyawan' : ($item->user->role === 'hrd' ? 'HRD' : 'Admin') }}
                                 </span>
                             </div>
                             <p class="text-xs text-indigo-400 truncate">{{ $item->user->email }}</p>
