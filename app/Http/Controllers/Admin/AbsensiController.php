@@ -40,7 +40,52 @@ class AbsensiController extends Controller
     public function show(Absensi $absensi)
     {
         $absensi->load(['pegawai.user', 'pegawai.lokasiKerja', 'lokasi_kerja']);
-        return view('admin.absensi.show', compact('absensi'));
+
+        $jarakMasuk = $this->resolveJarak(
+            $absensi->jarak_masuk_meter,
+            $absensi->latitude_masuk,
+            $absensi->longitude_masuk,
+            $absensi->lokasi_kerja
+        );
+        $jarakPulang = $this->resolveJarak(
+            $absensi->jarak_pulang_meter,
+            $absensi->latitude_pulang,
+            $absensi->longitude_pulang,
+            $absensi->lokasi_kerja
+        );
+
+        return view('admin.absensi.show', compact('absensi', 'jarakMasuk', 'jarakPulang'));
+    }
+
+    private function resolveJarak(?int $jarakTersimpan, $latitude, $longitude, ?LokasiKerja $lokasi): ?int
+    {
+        if ($jarakTersimpan !== null) {
+            return (int) round($jarakTersimpan);
+        }
+
+        if ($latitude === null || $longitude === null || !$lokasi) {
+            return null;
+        }
+
+        return (int) round($this->hitungJarak(
+            (float) $latitude,
+            (float) $longitude,
+            (float) $lokasi->latitude,
+            (float) $lokasi->longitude
+        ));
+    }
+
+    private function hitungJarak(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2)
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2))
+            * sin($dLon / 2) * sin($dLon / 2);
+
+        return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
     public function rekap(Request $request)

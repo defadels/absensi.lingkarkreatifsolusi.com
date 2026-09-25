@@ -39,14 +39,14 @@
             </div>
             <div class="glass-card rounded-xl p-3 sm:p-4">
                 <p class="text-xs text-indigo-400 mb-1">Jarak Masuk</p>
-                <p class="text-lg sm:text-xl font-bold {{ $absensi->jarak_masuk_meter <= $absensi->lokasi_kerja->radius_meter ? 'text-emerald-400' : 'text-red-400' }}">
-                    {{ $absensi->jarak_masuk_meter ? $absensi->jarak_masuk_meter . 'm' : '—' }}
+                <p class="text-lg sm:text-xl font-bold {{ $jarakMasuk !== null ? ($jarakMasuk <= $absensi->lokasi_kerja->radius_meter ? 'text-emerald-400' : 'text-red-400') : 'text-indigo-400' }}">
+                    {{ $jarakMasuk !== null ? number_format($jarakMasuk, 0, ',', '.') . ' m' : '—' }}
                 </p>
             </div>
             <div class="glass-card rounded-xl p-3 sm:p-4">
                 <p class="text-xs text-indigo-400 mb-1">Jarak Pulang</p>
-                <p class="text-lg sm:text-xl font-bold {{ $absensi->jarak_pulang_meter && $absensi->jarak_pulang_meter <= $absensi->lokasi_kerja->radius_meter ? 'text-emerald-400' : 'text-indigo-400' }}">
-                    {{ $absensi->jarak_pulang_meter ? $absensi->jarak_pulang_meter . 'm' : '—' }}
+                <p class="text-lg sm:text-xl font-bold {{ $jarakPulang !== null ? ($jarakPulang <= $absensi->lokasi_kerja->radius_meter ? 'text-emerald-400' : 'text-red-400') : 'text-indigo-400' }}">
+                    {{ $jarakPulang !== null ? number_format($jarakPulang, 0, ',', '.') . ' m' : '—' }}
                 </p>
             </div>
         </div>

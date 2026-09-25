@@ -34,7 +34,7 @@
                     <div>
                         <label class="block text-sm font-medium text-indigo-200 mb-1.5">Role</label>
                         <select name="role" class="input-field w-full rounded-xl px-4 py-2.5 text-white text-sm">
-                            <option value="pegawai" {{ old('role', $pegawai->user->role) === 'pegawai' ? 'selected' : '' }}>Pegawai</option>
+                            <option value="pegawai" {{ old('role', $pegawai->user->role) === 'pegawai' ? 'selected' : '' }}>Karyawan</option>
                             <option value="hrd" {{ old('role', $pegawai->user->role) === 'hrd' ? 'selected' : '' }}>HRD</option>
                             <option value="admin" {{ old('role', $pegawai->user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
