@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Keep native select menus legible across operating-system themes. */
+/* Windows may keep native select popups light even when the field is dark. */
 select {
     color-scheme: dark;
 }
 
 select option {
-    color: #f8fafc;
-    background-color: #1e1b4b;
+    color: #111827;
+    background-color: #ffffff;
 }
 
 select option:checked {
