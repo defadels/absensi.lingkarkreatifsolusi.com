@@ -95,7 +95,7 @@
             <div class="flex justify-center mb-4">
                 <div class="rounded-2xl overflow-hidden shadow-2xl"
                     style="box-shadow: 0 0 30px rgba(99,102,241,0.25); background: white; padding: 10px 18px;">
-                    <img src="/Logo LINKS Panjang.png" alt="PT Lingkar Kreatif Solusi"
+                    <img src="{{ asset('links-logo-new.png') }}" alt="PT Lingkar Kreatif Solusi"
                         class="h-14 w-auto object-contain">
                 </div>
             </div>
