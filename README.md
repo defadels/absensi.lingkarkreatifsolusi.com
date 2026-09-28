@@ -510,6 +510,23 @@ Buka browser ke: **http://localhost:8000**
 
 > Atau bisa juga jalankan semua sekaligus dengan: `composer run dev`
 
+### SMTP Google Mail untuk Lupa Password
+
+Fitur lupa password mengirim tautan reset melalui SMTP Gmail. Siapkan **Google App Password** untuk akun pengirim, lalu isi konfigurasi ini di `.env` (jangan memakai password login Google):
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=alamat-pengirim@gmail.com
+MAIL_PASSWORD=app-password-google-16-karakter
+MAIL_FROM_ADDRESS=alamat-pengirim@gmail.com
+MAIL_FROM_NAME="PT Lingkar Kreatif Solusi"
+```
+
+Setelah mengubah `.env`, jalankan `php artisan config:clear`. Gmail harus mengizinkan SMTP untuk akun tersebut; simpan App Password hanya di `.env` dan jangan commit ke repository.
+
 ---
 
 ## 👤 Akun Demo (Default Seeder)

@@ -1,39 +1,85 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+<x-layouts.guest>
+    <x-slot name="title">Buat Password Baru</x-slot>
 
-        <!-- Password Reset Token -->
+    <h2 class="mb-1 text-xl font-bold text-white">Buat Password Baru</h2>
+    <p class="mb-6 text-sm text-indigo-300">Pilih password baru untuk mengamankan akun Anda.</p>
+
+    @if ($errors->has('email'))
+        <div role="alert" class="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {{ $errors->first('email') }}
+        </div>
+    @endif
+
+    <form id="reset-password-form" method="POST" action="{{ route('password.store') }}" class="space-y-5">
+        @csrf
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-        <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label for="email" class="mb-1.5 block text-sm font-medium text-indigo-200">Email akun</label>
+            <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" readonly required autocomplete="email"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-indigo-200 opacity-80">
+            @error('email')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium text-indigo-200">Password baru</label>
+            <input id="password" type="password" name="password" required minlength="8" autocomplete="new-password"
+                placeholder="Minimal 8 karakter"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-indigo-400/50 @error('password') border-red-500/50 @enderror">
+            @error('password')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div>
+            <label for="password_confirmation" class="mb-1.5 block text-sm font-medium text-indigo-200">Konfirmasi password baru</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" required minlength="8" autocomplete="new-password"
+                placeholder="Ulangi password baru"
+                class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-indigo-400/50 @error('password_confirmation') border-red-500/50 @enderror">
+            <p id="password-match-feedback" class="mt-2 min-h-5 text-xs text-indigo-300" role="status" aria-live="polite"></p>
+            @error('password_confirmation')
+                <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <button id="reset-submit" type="submit" class="btn-primary w-full rounded-xl py-2.5 text-sm font-semibold tracking-wide text-white">
+            Simpan Password Baru
+        </button>
     </form>
-</x-guest-layout>
+
+    <script>
+        (() => {
+            const form = document.getElementById('reset-password-form');
+            const password = document.getElementById('password');
+            const confirmation = document.getElementById('password_confirmation');
+            const feedback = document.getElementById('password-match-feedback');
+            const submit = document.getElementById('reset-submit');
+
+            const checkMatch = () => {
+                if (!confirmation.value) {
+                    feedback.textContent = '';
+                    feedback.className = 'mt-2 min-h-5 text-xs text-indigo-300';
+                    confirmation.setCustomValidity('');
+                    submit.disabled = false;
+                    return;
+                }
+
+                const matches = password.value === confirmation.value;
+                feedback.textContent = matches ? 'Konfirmasi password cocok.' : 'Konfirmasi password belum sama.';
+                feedback.className = 'mt-2 min-h-5 text-xs ' + (matches ? 'text-emerald-300' : 'text-red-300');
+                confirmation.setCustomValidity(matches ? '' : 'Konfirmasi password harus sama.');
+                submit.disabled = !matches;
+            };
+
+            password.addEventListener('input', checkMatch);
+            confirmation.addEventListener('input', checkMatch);
+            form.addEventListener('submit', (event) => {
+                checkMatch();
+                if (!form.reportValidity()) event.preventDefault();
+            });
+            checkMatch();
+        })();
+    </script>
+</x-layouts.guest>
