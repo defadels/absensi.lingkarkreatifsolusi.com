@@ -16,6 +16,8 @@
 /node_modules
 /public/fonts-manifest.dev.json
 /public/hot
+# Laravel public storage symlink is environment-specific and must stay local.
+/public/storage
 /storage/*.key
 /storage/pail
 /vendor
